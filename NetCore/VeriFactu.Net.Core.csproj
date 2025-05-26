@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-<<<<<<< HEAD
   <PropertyGroup>
     <TargetFrameworks>net7.0;net8.0;netcoreapp3.1</TargetFrameworks>
     <ApplicationIcon>VeriFactu.ico</ApplicationIcon>
@@ -94,7 +93,7 @@
   <ItemGroup>
     <Folder Include="Src\Config\" />
   </ItemGroup>
-=======
+
 	<PropertyGroup>
 		<TargetFrameworks>net7.0;net8.0;netcoreapp3.1</TargetFrameworks>
 		<ApplicationIcon>VeriFactu.ico</ApplicationIcon>
@@ -180,6 +179,5 @@
 	<ItemGroup>
 		<Folder Include="Src\Config\" />
 	</ItemGroup>
->>>>>>> fix: dejar el csproj como estaba para el empaquetado de las diferentes veriones
 
 </Project>
