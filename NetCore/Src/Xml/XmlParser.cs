@@ -39,6 +39,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography.Xml;
 using System.Text;
@@ -93,6 +94,12 @@ namespace VeriFactu.Xml
                 input.Hour, input.Minute, input.Second, DateTimeKind.Local);
 
             return local.ToString("yyyy-MM-ddTHH:mm:ssK");
+
+        }
+
+        public static DateTime GetDateTimeIso8601(string currentTimeStamp)
+        {
+            return DateTime.ParseExact(currentTimeStamp,"yyyy-MM-dd'T'HH:mm:ssK", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
         }
 
