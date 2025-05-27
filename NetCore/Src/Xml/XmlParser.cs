@@ -97,6 +97,12 @@ namespace VeriFactu.Xml
 
         }
 
+        public static DateTime GetDateTimeIso8601(string currentTimeStamp)
+        {
+            return DateTime.ParseExact(currentTimeStamp,"yyyy-MM-dd'T'HH:mm:ssK", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+        }
+
         /// <summary>
         /// Devuelve una fecha formateada para un campo de fecha
         /// de la especificación de VeriFactu.
