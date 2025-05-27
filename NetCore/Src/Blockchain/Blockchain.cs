@@ -236,7 +236,7 @@ namespace VeriFactu.Blockchain
 
                 // Escribo el valor de la variables actuales
                 File.WriteAllText(BlockchainVarFileName, $"{CurrentID}{_CsvSeparator}" +    // 0
-                    $"{(DateTime)CurrentTimeStamp:dd/MM/yyyy HH:mm:ss}{_CsvSeparator}" +                                  // 1
+                    $"{XmlParser.GetXmlDateTimeIso8601(CurrentTimeStamp)}{_CsvSeparator}" + // 1
                     $"{Current.Huella}{_CsvSeparator}" +                                    // 2
                     $"{Current.IDFactura.FechaExpedicion}{_CsvSeparator}" +                 // 3
                     $"{Current.IDFactura.IDEmisor}{_CsvSeparator}" +                        // 4
@@ -256,8 +256,8 @@ namespace VeriFactu.Blockchain
         private string GetControFilelLine() 
         {
 
-            return $"{CurrentID}{_CsvSeparator}" +                              // 0 Id de entrada en la cadena de bloques
-                    $"{(DateTime)CurrentTimeStamp:dd/MM/yyyy HH:mm:ss}{_CsvSeparator}" +                      // 1 Marca de tiempo
+            return $"{CurrentID}{_CsvSeparator}" +                                            // 0 Id de entrada en la cadena de bloques
+                    $"{XmlParser.GetXmlDateTimeIso8601(CurrentTimeStamp)}{_CsvSeparator}" +  // 1 Marca de tiempo
                     $"{Current.Huella}{_CsvSeparator}" +                        // 2 Huella
                     $"{Current.IDFactura.FechaExpedicion}{_CsvSeparator}" +     // 3 Fecha expedición factura
                     $"{Current.IDFactura.IDEmisor}{_CsvSeparator}" +            // 4 Id emisor
@@ -463,7 +463,8 @@ namespace VeriFactu.Blockchain
                     var numSerieFactura = valuesVarData[5];
 
                     blockchain.CurrentID = Convert.ToUInt64(currentID);
-                    blockchain.CurrentTimeStamp = Convert.ToDateTime(currentTimeStamp);
+                    blockchain.CurrentTimeStamp = XmlParser.GetDateTimeIso8601(currentTimeStamp);
+                    Convert.ToDateTime(currentTimeStamp);
                     blockchain.Current = new Registro()
                     {
                         Huella = huella,
