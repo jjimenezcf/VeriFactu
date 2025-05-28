@@ -40,6 +40,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using VeriFactu.Common;
 using VeriFactu.Config;
 using VeriFactu.Xml;
@@ -81,6 +82,7 @@ namespace VeriFactu.Blockchain
         {
 
             LoadBlockchainsFromDisk();
+
             Initialized = true;
 
         }
@@ -95,10 +97,16 @@ namespace VeriFactu.Blockchain
         /// <param name="sellerID">Vendedor al que pertenece la cadena de bloques.</param>
         public Blockchain(string sellerID) : base(sellerID)
         {
-
             BlockchainPath = GetBlockchainPath(Key);
             SellerID = Key;
 
+        }
+
+        public static Blockchain Resetear(string sellerID)
+        {
+            var blockChain = (Blockchain)GetInstance(sellerID);
+            blockChain.BlockchainPath = blockChain.GetBlockchainPath(sellerID);
+            return blockChain;
         }
 
         #endregion
@@ -167,7 +175,7 @@ namespace VeriFactu.Blockchain
 
             // Establezco el momento de generación.
             CurrentTimeStamp = DateTime.Now;
-            registro.FechaHoraHusoGenRegistro = XmlParser.GetXmlDateTimeIso8601(CurrentTimeStamp);            
+            registro.FechaHoraHusoGenRegistro = XmlParser.GetXmlDateTimeIso8601(CurrentTimeStamp);
 
             // Calculo la huella con los datos del encadenamiento ya actualizados
             registro.Huella = registro.GetHashOutput();
@@ -231,7 +239,7 @@ namespace VeriFactu.Blockchain
                 File.Delete(BlockchainVarFileName);
 
             }
-            else 
+            else
             {
 
                 // Escribo el valor de la variables actuales
@@ -253,7 +261,7 @@ namespace VeriFactu.Blockchain
         /// con los datos necesarios.
         /// </summary>
         /// <returns>Linea de archivo csv</returns>
-        private string GetControFilelLine() 
+        private string GetControFilelLine()
         {
 
             return $"{CurrentID}{_CsvSeparator}" +                                            // 0 Id de entrada en la cadena de bloques
@@ -300,12 +308,12 @@ namespace VeriFactu.Blockchain
         /// <exception cref="InvalidOperationException">Se lanza si no se encuentra archivo previo a restaurar.</exception>
         private void RestorePreviousData(string blockchainDataFileName, 
             string blockchainDataPreviousFileName)
-        {            
+        {
 
             var isFirstLink = CurrentID == 0; // Se trataba del primer eslabón de la cadena
             var isFirstBlockPeriodLink = false; // Se trata del primer eslabón del periodo
 
-            if (!File.Exists(blockchainDataPreviousFileName)) 
+            if (!File.Exists(blockchainDataPreviousFileName))
             {
 
                 if (File.ReadAllLines(blockchainDataFileName).Length == 1)
@@ -436,6 +444,14 @@ namespace VeriFactu.Blockchain
         /// <exception cref="InvalidOperationException">Se lanza si BlockchainPath no es un directorio válido.</exception>
         public static void LoadBlockchainsFromDisk()
         {
+            ReloadBlockchainsFromDisk(recargar: false);
+        }
+
+        /// <summary>
+        /// Carga todas las cadenas de bloques.
+        /// </summary>
+        public static void ReloadBlockchainsFromDisk(bool recargar = true)
+        {
 
             if (string.IsNullOrEmpty(Settings.Current.BlockchainPath) || !Directory.Exists(Settings.Current.BlockchainPath))
                 throw new InvalidOperationException($"Revise el archivo de configuración {Settings.FileName}," +
@@ -447,7 +463,9 @@ namespace VeriFactu.Blockchain
             {
 
                 var sellerID = Path.GetFileName(dir);
-                var blockchain = new Blockchain(sellerID);
+
+
+                var blockchain = recargar ? Resetear(sellerID) : new Blockchain(sellerID);
 
                 if (File.Exists(blockchain.BlockchainVarFileName))
                 {
@@ -498,19 +516,18 @@ namespace VeriFactu.Blockchain
 
             lock (_Locker)
             {
-
-                try 
+                try
                 {
-
+                    traza.AppendLine($"El {nameof(CurrentID)}: {CurrentID}");
+                    traza.AppendLine($"la Huella: {nameof(Current.Huella)} = {Current?.Huella}");
+                    traza.AppendLine($"Primer registro: {(string.IsNullOrEmpty(Current?.Huella) ? "SI" : "NO")}");
                     Insert(registro);
                     Write();
 
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
-
                     addException = ex;
-
                 }
 
             }
@@ -538,7 +555,7 @@ namespace VeriFactu.Blockchain
 
                     var csvLines = new List<string>();
 
-                    for(int r = 0; r < registros.Count; r++)
+                    for (int r = 0; r < registros.Count; r++)
                         csvLines.Add(Insert(registros[r]));
 
                     Write(csvLines);
@@ -582,15 +599,15 @@ namespace VeriFactu.Blockchain
 
             lock (_Locker)
             {
-                
-                try 
+
+                try
                 {
 
                     WriteVar();
                     RestorePreviousData(blockchainDataFileName, blockchainDataPreviousFileName);
 
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
 
                     restoreException = ex;
