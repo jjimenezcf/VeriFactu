@@ -195,8 +195,12 @@ namespace VeriFactu.Blockchain
         /// <summary>
         /// Elimina el útlimo elemento añadido a la cadena.
         /// </summary>
+<<<<<<< HEAD
         /// <exception cref="InvalidOperationException">Se lanza si no se encuentra el último eslabón.</exception>
         private void Remove() 
+=======
+        private void Remove()
+>>>>>>> feat: crear método reload
         {
 
             if (Previous == null && CurrentID > 1)
@@ -305,8 +309,12 @@ namespace VeriFactu.Blockchain
         /// </summary>
         /// <param name="blockchainDataFileName">Archivo de datos a restaurar.</param>
         /// <param name="blockchainDataPreviousFileName">Copia anterior utilizada para restaurar.</param>
+<<<<<<< HEAD
         /// <exception cref="InvalidOperationException">Se lanza si no se encuentra archivo previo a restaurar.</exception>
         private void RestorePreviousData(string blockchainDataFileName, 
+=======
+        private void RestorePreviousData(string blockchainDataFileName,
+>>>>>>> feat: crear método reload
             string blockchainDataPreviousFileName)
         {
 
@@ -508,8 +516,12 @@ namespace VeriFactu.Blockchain
         /// Añade un elemento a la cadena de bloques.
         /// </summary>
         /// <param name="registro">Registro a añadir.</param>
+<<<<<<< HEAD
         /// <exception cref="Exception">Si no se puede añadir el eslabón en la cadena.</exception>
         public void Add(Registro registro)
+=======
+        public void Add(Registro registro, StringBuilder traza)
+>>>>>>> feat: crear método reload
         {
 
             Exception addException = null;
@@ -580,10 +592,14 @@ namespace VeriFactu.Blockchain
         /// </summary>
         /// <param name="registro">Registro a eliminar.
         /// Sólo puede eliminarse el último elemento añadido.</param> 
+<<<<<<< HEAD
         /// <exception cref="InvalidOperationException">
         /// Si se itenta eliminar un registro que no es el último.
         /// </exception>
         public void Delete(Registro registro) 
+=======
+        public void Delete(Registro registro)
+>>>>>>> feat: crear método reload
         {
 
             if (registro.Huella != Current.Huella)
