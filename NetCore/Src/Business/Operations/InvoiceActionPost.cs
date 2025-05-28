@@ -39,6 +39,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using VeriFactu.Net;
 using VeriFactu.Xml.Factu;
 
@@ -86,11 +87,11 @@ namespace VeriFactu.Business.Operations
         /// <para> 3. Guarda el registro en disco en el el directorio de registros emitidos.</para>
         /// <para> 4. Establece Posted = true.</para>
         /// </summary>
-        internal virtual void Post()
+        internal virtual void Post(StringBuilder traza)
         {
 
             // Añadimos el registro de alta (1)
-            BlockchainManager.Add(Registro);
+            BlockchainManager.Add(Registro, traza);
 
             // Actualizamos datos (2,3,4)
             SaveBlockchainChanges();
@@ -175,7 +176,7 @@ namespace VeriFactu.Business.Operations
         /// </summary>
         /// <returns>Si todo funciona correctamente devuelve null.
         /// En caso contrario devuelve una excepción con el error.</returns>
-        internal void ExecutePost()
+        internal void ExecutePost(StringBuilder traza)
         {
 
             // Compruebo el certificado
@@ -191,9 +192,7 @@ namespace VeriFactu.Business.Operations
 
                 try
                 {
-
-                    Post();                   
-
+                    Post(traza);   
                 }
                 catch (Exception ex)
                 {
@@ -226,7 +225,7 @@ namespace VeriFactu.Business.Operations
         /// <summary>
         /// Contabiliza y envía a la AEAT el registro.
         /// </summary>
-        public void Save()
+        public void Save(string ruta, string nombreFichero)
         {
 
             if (IsSaved)
@@ -234,8 +233,22 @@ namespace VeriFactu.Business.Operations
                     " puede llamar al método Save() una vez.");
 
             Exception sentException = null;
-
-            ExecutePost();
+            StreamWriter writer = null;
+            StringBuilder traza = new StringBuilder();
+            string rutaCompleta = Path.Combine(ruta, nombreFichero);
+            try
+            {
+                writer = new StreamWriter(rutaCompleta, false, Encoding.UTF8);
+                ExecutePost(traza);
+            }
+            finally
+            {
+                if (writer != null)
+                {
+                    writer.Write(traza.ToString());
+                    writer.Close(); 
+                }
+            }
 
             try
             {
@@ -249,6 +262,7 @@ namespace VeriFactu.Business.Operations
                 ClearPost();
 
             }
+
 
             if (string.IsNullOrEmpty(CSV) || sentException != null)
                 if(sentException == null)
