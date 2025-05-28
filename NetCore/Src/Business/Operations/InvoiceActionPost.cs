@@ -89,11 +89,11 @@ namespace VeriFactu.Business.Operations
         /// <para> 3. Guarda el registro en disco en el el directorio de registros emitidos.</para>
         /// <para> 4. Establece Posted = true.</para>
         /// </summary>
-        internal virtual void Post()
+        internal virtual void Post(StringBuilder traza)
         {
 
             // Añadimos el registro de alta (1)
-            BlockchainManager.Add(Registro);
+            BlockchainManager.Add(Registro, traza);
 
             // Actualizamos datos (2,3,4)
             SaveBlockchainChanges();
@@ -178,7 +178,7 @@ namespace VeriFactu.Business.Operations
         /// </summary>
         /// <returns>Si todo funciona correctamente devuelve null.
         /// En caso contrario devuelve una excepción con el error.</returns>
-        internal void ExecutePost()
+        internal void ExecutePost(StringBuilder traza)
         {
 
             // Compruebo el certificado
@@ -194,9 +194,7 @@ namespace VeriFactu.Business.Operations
 
                 try
                 {
-
-                    Post();                   
-
+                    Post(traza);   
                 }
                 catch (Exception ex)
                 {
@@ -228,19 +226,30 @@ namespace VeriFactu.Business.Operations
         /// <summary>
         /// Contabiliza y envía a la AEAT el registro.
         /// </summary>
-        /// <param name="certificate">Certificado para la petición.</param>
-        /// <exception cref="InvalidOperationException">Si ya se ha guardado con anterioridad.</exception>
-        /// <exception cref="Exception">Si surge error en el envío.</exception>
-        public void Save(X509Certificate2 certificate = null)
+        public void Save(string ruta, string nombreFichero, X509Certificate2 certificate = null)
         {
 
             if (IsSaved)
                 throw new InvalidOperationException("El objeto InvoiceEntry sólo" +
                     " puede llamar al método Save() una vez.");
 
-            Exception sendException = null;
-
-            ExecutePost();
+            Exception sentException = null;
+            StreamWriter writer = null;
+            StringBuilder traza = new StringBuilder();
+            string rutaCompleta = Path.Combine(ruta, nombreFichero);
+            try
+            {
+                writer = new StreamWriter(rutaCompleta, false, Encoding.UTF8);
+                ExecutePost(traza);
+            }
+            finally
+            {
+                if (writer != null)
+                {
+                    writer.Write(traza.ToString());
+                    writer.Close(); 
+                }
+            }
 
             try
             {
@@ -255,8 +264,9 @@ namespace VeriFactu.Business.Operations
 
             }
 
-            if (string.IsNullOrEmpty(CSV) || sendException != null)
-                if(sendException == null)
+
+            if (string.IsNullOrEmpty(CSV) || sentException != null)
+                if(sentException == null)
                     ClearPost();
 
             if (sendException != null)
