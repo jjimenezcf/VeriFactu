@@ -37,17 +37,17 @@
     address: info@irenesolutions.com
  */
 
-using System.Collections.Generic;
-using VeriFactu.Xml.Factu.Alta;
-using VeriFactu.Xml.Soap;
+using System;
+using VeriFactu.Xml.Factu.Fault;
 
-namespace VeriFactu.Business.Validation.Validators.Alta
+namespace VeriFactu.Common.Exceptions
 {
 
     /// <summary>
-    /// Valida los datos de RegistroAlta EmitidaPorTerceroODestinatario.
+    /// Representa el error devuelto por la AEAT cuando es su repuesta se incluye
+    /// el bloque Fault.
     /// </summary>
-    public class ValidatorRegistroAltaEmitidaPorTerceroODestinatario : ValidatorRegistroAlta
+    public class FaultException : Exception
     {
 
         #region Construtores de Instancia
@@ -55,46 +55,52 @@ namespace VeriFactu.Business.Validation.Validators.Alta
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="envelope"> Envelope de envío al
-        /// servicio Verifactu de la AEAT.</param>
-        /// <param name="registroAlta"> Registro de alta del bloque Body.</param>
-        public ValidatorRegistroAltaEmitidaPorTerceroODestinatario(Envelope envelope, RegistroAlta registroAlta) : base(envelope, registroAlta)
+        /// <param name="fault">Objeto  VeriFactu.Xml.Factu.Fault.Fault que origina
+        /// la excepción.</param>
+        public FaultException(Fault fault) : base($"{fault.detail}")
         {
+
+            Fault = fault ?? throw new ArgumentNullException(nameof(fault), "El objeto Fault no puede ser nulo.");
+
         }
 
         #endregion
 
-        #region Métodos Privados de Instancia
+        #region Propiedades Públicas de Instancia
 
         /// <summary>
-        /// Obtiene los errores de un bloque en concreto.
+        /// Objeto  VeriFactu.Xml.Factu.Fault.Fault que origina
+        /// la excepción.
         /// </summary>
-        /// <returns>Lista con los errores de un bloque en concreto.</returns>
-        protected override List<string> GetBlockErrors()
+        public Fault Fault { get; private set; }
+
+        /// <summary>
+        /// Código de error devuelto por la AEAT.
+        /// </summary>
+        public string FaultCode
+        {
+            
+            get 
+            {
+
+                return Fault.faultcode;
+
+            }
+
+        }
+
+        /// <summary>
+        /// Texto de error devuelto por la AEAT.
+        /// </summary>
+        public string FaultString
         {
 
-            var result = new List<string>();
+            get
+            {
 
-            // 11. EmitidaPorTerceroODestinatario
+                return Fault.faultstring;
 
-            // Si es igual a “T”, el bloque Tercero será de cumplimentación obligatoria.
-
-            if (_RegistroAlta.Tercero == null && _RegistroAlta.EmitidaPorTerceroODestinatarioSpecified &&
-                _RegistroAlta.EmitidaPorTerceroODestinatario == EmitidaPorTerceroODestinatario.T)
-                result.Add($"Error en el bloque RegistroAlta ({_RegistroAlta}):" +
-                    $" Si EmitidaPorTerceroODestinatario es igual a “T”," +
-                    $" el bloque Tercero será de cumplimentación obligatoria.");
-
-            // Si es igual a “D”, el bloque Destinatarios será de cumplimentación obligatoria.
-
-            if ((_RegistroAlta.Destinatarios == null || _RegistroAlta.Destinatarios.Count == 0) &&
-                _RegistroAlta.EmitidaPorTerceroODestinatarioSpecified &&
-                _RegistroAlta.EmitidaPorTerceroODestinatario == EmitidaPorTerceroODestinatario.D)
-                result.Add($"Error en el bloque RegistroAlta ({_RegistroAlta}):" +
-                    $" Si EmitidaPorTerceroODestinatario es igual a “D”, el bloque" +
-                    $" Destinatarios será de cumplimentación obligatoria,");
-
-            return result;
+            }
 
         }
 

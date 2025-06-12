@@ -43,8 +43,10 @@ using System.Diagnostics;
 using System.IO;
 using VeriFactu.Business.Operations;
 using VeriFactu.Common;
+using VeriFactu.Common.Exceptions;
 using VeriFactu.Xml;
 using VeriFactu.Xml.Factu;
+using VeriFactu.Xml.Factu.Fault;
 using VeriFactu.Xml.Factu.Respuesta;
 using VeriFactu.Xml.Soap;
 
@@ -129,6 +131,18 @@ namespace VeriFactu.Business.FlowControl
 
 
             var respuesta = (envelopeRespuesta.Body.Registro as RespuestaRegFactuSistemaFacturacion);
+
+            if (respuesta == null) 
+            { 
+            
+                var fault = (envelopeRespuesta.Body.Registro as Fault);
+
+                if (fault == null)
+                    throw new Exception("No se ha podido recuperar la respuesta de la AEAT correctamente.");
+                else
+                    throw new FaultException(fault);
+
+            }
 
             return respuesta;
 
