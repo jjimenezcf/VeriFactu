@@ -23,12 +23,12 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   
-  <PropertyGroup>
+  <!--<PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CustomContentTarget</TargetsForTfmSpecificContentInPackage>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-  </PropertyGroup>
+  </PropertyGroup>-->
   
-   <Target Name="CustomContentTarget">
+   <!--<Target Name="CustomContentTarget">
     <ItemGroup>
       <TfmSpecificPackageFile Include="..\NetFramework\bin\Debug\VeriFactu.dll">
         <PackagePath>lib/net48</PackagePath>
@@ -53,7 +53,7 @@
         <PackagePath>lib/net461</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
-  </Target> 
+  </Target>--> 
     
 
 
