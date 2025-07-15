@@ -91,15 +91,7 @@ namespace VeriFactu.Config
                     _basePath = RuntimeInformation.IsOSPlatform(OSPlatform.Create("IOS")) || RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID")) ?
                         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + $"{_PathSep}VeriFactu{_PathSep}" :
 #endif
-                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + $"{_PathSep}VeriFactu{_PathSep}";
-                }
-                return _basePath;
-            }
-            internal set // Puedes hacerlo public si quieres que se acceda desde fuera del ensamblado
-            {
-                _basePath = value;
-            }
-        }
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + $"{_PathSep}VeriFactu{_PathSep}";
 
         // O mejor, añade un método estático para establecerla, si no quieres un setter público
         public static void SetBasePath(string newPath)
