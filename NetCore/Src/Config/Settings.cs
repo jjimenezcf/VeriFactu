@@ -363,10 +363,10 @@ namespace VeriFactu.Config
             set 
             { 
 
-                if(Current.BlockchainPath != null && Current.BlockchainPath != value 
-                    && Directory.GetDirectories(Current.BlockchainPath).Length > 0)
-                    throw new InvalidOperationException($"No se puede cambiar el valor" +
-                        $" de 'BlockchainPath' si la carpeta no está vacía.");
+                //if(Current.BlockchainPath != null && Current.BlockchainPath != value 
+                //    && Directory.GetDirectories(Current.BlockchainPath).Length > 0)
+                //    throw new InvalidOperationException($"No se puede cambiar el valor" +
+                //        $" de 'BlockchainPath' si la carpeta no está vacía.");
 
                 _BlockchainPath = value; 
 
