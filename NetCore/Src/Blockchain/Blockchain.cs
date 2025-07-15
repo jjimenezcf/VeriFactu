@@ -196,11 +196,15 @@ namespace VeriFactu.Blockchain
         /// Elimina el útlimo elemento añadido a la cadena.
         /// </summary>
 <<<<<<< HEAD
+<<<<<<< HEAD
         /// <exception cref="InvalidOperationException">Se lanza si no se encuentra el último eslabón.</exception>
         private void Remove() 
 =======
         private void Remove()
 >>>>>>> feat: crear método reload
+=======
+        private void Remove()
+>>>>>>> resolver conflictos
         {
 
             if (Previous == null && CurrentID > 1)
@@ -307,11 +311,15 @@ namespace VeriFactu.Blockchain
         /// <param name="blockchainDataFileName">Archivo de datos a restaurar.</param>
         /// <param name="blockchainDataPreviousFileName">Copia anterior utilizada para restaurar.</param>
 <<<<<<< HEAD
+<<<<<<< HEAD
         /// <exception cref="InvalidOperationException">Se lanza si no se encuentra archivo previo a restaurar.</exception>
         private void RestorePreviousData(string blockchainDataFileName, 
 =======
         private void RestorePreviousData(string blockchainDataFileName,
 >>>>>>> feat: crear método reload
+=======
+        private void RestorePreviousData(string blockchainDataFileName,
+>>>>>>> resolver conflictos
             string blockchainDataPreviousFileName)
         {
 
@@ -444,7 +452,6 @@ namespace VeriFactu.Blockchain
         /// <summary>
         /// Carga todas las cadenas de bloques.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Se lanza si BlockchainPath no es un directorio válido.</exception>
         public static void LoadBlockchainsFromDisk()
         {
             ReloadBlockchainsFromDisk(recargar: false);
@@ -512,11 +519,15 @@ namespace VeriFactu.Blockchain
         /// </summary>
         /// <param name="registro">Registro a añadir.</param>
 <<<<<<< HEAD
+<<<<<<< HEAD
         /// <exception cref="Exception">Si no se puede añadir el eslabón en la cadena.</exception>
         public void Add(Registro registro)
 =======
         public void Add(Registro registro, StringBuilder traza)
 >>>>>>> feat: crear método reload
+=======
+        public void Add(Registro registro, StringBuilder traza)
+>>>>>>> resolver conflictos
         {
 
             Exception addException = null;
@@ -548,7 +559,6 @@ namespace VeriFactu.Blockchain
         /// Añade una lista de elementos a la cadena de bloques.
         /// </summary>
         /// <param name="registros">Registros a añadir.</param>
-        /// <exception cref="Exception">Si no se puede añadir el eslabón en la cadena.</exception>
         public void Add(List<Registro> registros)
         {
 
@@ -588,6 +598,7 @@ namespace VeriFactu.Blockchain
         /// <param name="registro">Registro a eliminar.
         /// Sólo puede eliminarse el último elemento añadido.</param> 
 <<<<<<< HEAD
+<<<<<<< HEAD
         /// <exception cref="InvalidOperationException">
         /// Si se itenta eliminar un registro que no es el último.
         /// </exception>
@@ -595,6 +606,9 @@ namespace VeriFactu.Blockchain
 =======
         public void Delete(Registro registro)
 >>>>>>> feat: crear método reload
+=======
+        public void Delete(Registro registro)
+>>>>>>> resolver conflictos
         {
 
             if (Settings.Current.DisableBlockchainDelete)
