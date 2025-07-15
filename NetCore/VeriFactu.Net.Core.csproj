@@ -22,9 +22,7 @@
     <AssemblyName>VeriFactu</AssemblyName>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
-<<<<<<< HEAD
-     
-=======
+
   
   <!--<PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CustomContentTarget</TargetsForTfmSpecificContentInPackage>
@@ -58,8 +56,6 @@
     </ItemGroup>
   </Target>--> 
     
->>>>>>> fix: ajustes en la emisión de verifactu de rectificativas, y de el nº de implantación
-
 
   <ItemGroup>
     <Content Include="VeriFactu.ico" />
