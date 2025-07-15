@@ -74,15 +74,38 @@ namespace VeriFactu.Config
 		/// </summary>
 		static Settings _Current;
 
-		/// <summary>
-		/// Ruta al directorio de configuración.
-		/// </summary>
-		static readonly string _Path =
+
+        // Por esto (añadiendo un setter interno para que solo se pueda cambiar desde dentro de la DLL, o público si es necesario):
+        private static string _basePath; // Nuevo campo privado
+
+        // Y modifica la propiedad Path para que use _basePath
+        public static string Path
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_basePath))
+                {
+                    // Si _basePath no ha sido establecido, usa la lógica por defecto.
+                    // Esto asegura que haya un valor incluso si no se llama a SetBasePath explícitamente.
 #if !LE_461
-            RuntimeInformation.IsOSPlatform(OSPlatform.Create("IOS")) || RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID")) ?
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + $"{_PathSep}VeriFactu{_PathSep}" :
+                    _basePath = RuntimeInformation.IsOSPlatform(OSPlatform.Create("IOS")) || RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID")) ?
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + $"{_PathSep}VeriFactu{_PathSep}" :
 #endif
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + $"{_PathSep}VeriFactu{_PathSep}";
+                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + $"{_PathSep}VeriFactu{_PathSep}";
+                }
+                return _basePath;
+            }
+            internal set // Puedes hacerlo public si quieres que se acceda desde fuera del ensamblado
+            {
+                _basePath = value;
+            }
+        }
+
+        // O mejor, añade un método estático para establecerla, si no quieres un setter público
+        public static void SetBasePath(string newPath)
+        {
+            _basePath = newPath;
+        }
 
         /// <summary>
         /// Ruta al directorio de la cadena de bloques.
@@ -285,10 +308,10 @@ namespace VeriFactu.Config
             }
         }
 
-        /// <summary>
-        /// Ruta al directorio de configuración.
-        /// </summary>
-        public static string Path => _Path;
+        ///// <summary>
+        ///// Ruta al directorio de configuración.
+        ///// </summary>
+        //public static string Path => _Path;
 
         #endregion
 
