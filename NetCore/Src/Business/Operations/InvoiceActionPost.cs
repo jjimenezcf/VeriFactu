@@ -40,6 +40,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using VeriFactu.Common.Exceptions;
 using VeriFactu.Config;
 using VeriFactu.Net;
