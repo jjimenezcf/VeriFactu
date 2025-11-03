@@ -243,6 +243,7 @@ namespace VeriFactu.Business.Operations
             {
                 writer = new StreamWriter(rutaCompleta, false, Encoding.UTF8);
                 ExecutePost(traza);
+                ExecuteSend(certificate);
                 ProcessResponse();
             }
             catch (Exception ex)
