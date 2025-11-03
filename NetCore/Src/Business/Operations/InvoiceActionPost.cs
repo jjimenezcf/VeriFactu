@@ -39,6 +39,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using VeriFactu.Common.Exceptions;
@@ -242,41 +243,35 @@ namespace VeriFactu.Business.Operations
             {
                 writer = new StreamWriter(rutaCompleta, false, Encoding.UTF8);
                 ExecutePost(traza);
+                ProcessResponse();
+            }
+            catch (Exception ex)
+            {
+
+                sentException = ex;
+                ClearPost();
+
             }
             finally
             {
                 if (writer != null)
                 {
                     writer.Write(traza.ToString());
-                    writer.Close(); 
+                    writer.Close();
                 }
-            }
-
-            try
-            {
-                ExecuteSend(certificate);
-                ProcessResponse();
-            }
-            catch (Exception ex)
-            {
-
-                sendException = ex;
-                ClearPost();
-
             }
 
 
             if (string.IsNullOrEmpty(CSV) || sentException != null)
-                if(sentException == null)
+                if (sentException == null)
                     ClearPost();
 
-            if (sendException != null)
-                throw new SendException(sendException);
+            if (sentException != null)
+                throw new SendException(sentException);
 
             IsSaved = true;
 
         }
-
         #endregion
 
     }
