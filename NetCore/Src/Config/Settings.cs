@@ -54,36 +54,58 @@ using VeriFactu.Xml.Factu;
 namespace VeriFactu.Config
 {
 
-	/// <summary>
-	/// Configuración.
-	/// </summary>
-	[Serializable]
-	[XmlRoot("Settings")]
-	public class Settings
-	{
+    /// <summary>
+    /// Configuración.
+    /// </summary>
+    [Serializable]
+    [XmlRoot("Settings")]
+    public class Settings
+    {
 
-		#region Variables Privadas Estáticas
+        #region Variables Privadas Estáticas
 
-		/// <summary>
-		/// Path separator win="\" and linux ="/".
-		/// </summary>
-		static readonly char _PathSep = System.IO.Path.DirectorySeparatorChar;
+        /// <summary>
+        /// Path separator win="\" and linux ="/".
+        /// </summary>
+        static readonly char _PathSep = System.IO.Path.DirectorySeparatorChar;
 
-		/// <summary>
-		/// Configuración actual.
-		/// </summary>
-		static Settings _Current;
+        /// <summary>
+        /// Configuración actual.
+        /// </summary>
+        static Settings _Current;
 
-		/// <summary>
-		/// Ruta al directorio de configuración.
-		/// </summary>
-		static readonly string _Path =
+
+        // Por esto (añadiendo un setter interno para que solo se pueda cambiar desde dentro de la DLL, o público si es necesario):
+        private static string _basePath; // Nuevo campo privado
+
+        // Y modifica la propiedad Path para que use _basePath
+        public static string Path
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_basePath))
+                {
+                    // Si _basePath no ha sido establecido, usa la lógica por defecto.
+                    // Esto asegura que haya un valor incluso si no se llama a SetBasePath explícitamente.
 #if !LE_461
-            RuntimeInformation.IsOSPlatform(OSPlatform.Create("OSX")) || RuntimeInformation.IsOSPlatform(OSPlatform.Create("IOS")) || 
-            RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID")) ?
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + $"{_PathSep}VeriFactu{_PathSep}" :
+                    _basePath = RuntimeInformation.IsOSPlatform(OSPlatform.Create("IOS")) || RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID")) ?
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + $"{_PathSep}VeriFactu{_PathSep}" :
 #endif
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + $"{_PathSep}VeriFactu{_PathSep}";
+                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + $"{_PathSep}VeriFactu{_PathSep}";
+                }
+                return _basePath;
+            }
+            internal set // Puedes hacerlo public si quieres que se acceda desde fuera del ensamblado
+            {
+                _basePath = value;
+            }
+        }
+
+        // O mejor, añade un método estático para establecerla, si no quieres un setter público
+        public static void SetBasePath(string newPath)
+        {
+            _basePath = newPath;
+        }
 
         /// <summary>
         /// Ruta al directorio de la cadena de bloques.
@@ -126,7 +148,7 @@ namespace VeriFactu.Config
         {
 
             DefaultNumberFormatInfo.NumberDecimalSeparator =
-                DefaultNumberDecimalSeparator;
+            DefaultNumberDecimalSeparator;
 
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
 
@@ -153,7 +175,7 @@ namespace VeriFactu.Config
             string FullPath = $"{Path}{_PathSep}" + FileName;
 
             XmlSerializer serializer = new XmlSerializer(_Current.GetType());
-            
+
             if (File.Exists(FullPath))
             {
 
@@ -164,7 +186,7 @@ namespace VeriFactu.Config
             else
             {
 
-                _Current= GetDefault();
+                _Current = GetDefault();
 
             }
 
@@ -196,12 +218,12 @@ namespace VeriFactu.Config
         /// por defecto de configuración.
         /// </summary>
         /// <returns></returns>
-        internal static Settings GetDefault() 
+        internal static Settings GetDefault()
         {
 
             var numeroInstalacion = "01";
 
-            try 
+            try
             {
 
                 var mac = GetLocalMacAddress();
@@ -210,7 +232,7 @@ namespace VeriFactu.Config
                     numeroInstalacion = mac;
 
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
 
                 Utils.Log($"{ex}");
@@ -233,8 +255,8 @@ namespace VeriFactu.Config
                 VeriFactuEndPointValidatePrefix = VeriFactuEndPointPrefixes.TestValidate,
                 VeriFactuHashAlgorithm = TipoHuella.Sha256,
                 VeriFactuHashInputEncoding = "UTF-8",
-                SistemaInformatico = new SistemaInformatico() 
-                { 
+                SistemaInformatico = new SistemaInformatico()
+                {
                     NIF = "B12959755",
                     NombreRazon = "IRENE SOLUTIONS SL",
                     NombreSistemaInformatico = $"{Assembly.GetExecutingAssembly().GetName().Name}",
@@ -245,7 +267,7 @@ namespace VeriFactu.Config
                     TipoUsoPosibleMultiOT = "S",
                     IndicadorMultiplesOT = "S"
                 },
-                Api = new Api() 
+                Api = new Api()
                 {
                     EndPointCreate = "https://facturae.irenesolutions.com:8050/Kivu/Taxes/Verifactu/Invoices/Create",
                     EndPointCancel = "https://facturae.irenesolutions.com:8050/Kivu/Taxes/Verifactu/Invoices/Cancel",
@@ -286,10 +308,10 @@ namespace VeriFactu.Config
             }
         }
 
-        /// <summary>
-        /// Ruta al directorio de configuración.
-        /// </summary>
-        public static string Path => _Path;
+        ///// <summary>
+        ///// Ruta al directorio de configuración.
+        ///// </summary>
+        //public static string Path => _Path;
 
         #endregion
 
@@ -328,25 +350,25 @@ namespace VeriFactu.Config
         /// de las distintas cadenas de bloques por emisor.
         /// </summary>
         [XmlElement("BlockchainPath")]
-        public string BlockchainPath 
-        { 
-            get 
-            { 
+        public string BlockchainPath
+        {
+            get
+            {
 
-                return _BlockchainPath; 
+                return _BlockchainPath;
 
-            } 
-            set 
-            { 
+            }
+            set
+            {
 
-                if(Current.BlockchainPath != null && Current.BlockchainPath != value 
-                    && Directory.GetDirectories(Current.BlockchainPath).Length > 0)
-                    throw new InvalidOperationException($"No se puede cambiar el valor" +
-                        $" de 'BlockchainPath' si la carpeta no está vacía.");
+                //if(Current.BlockchainPath != null && Current.BlockchainPath != value 
+                //    && Directory.GetDirectories(Current.BlockchainPath).Length > 0)
+                //    throw new InvalidOperationException($"No se puede cambiar el valor" +
+                //        $" de 'BlockchainPath' si la carpeta no está vacía.");
 
-                _BlockchainPath = value; 
+                _BlockchainPath = value;
 
-            } 
+            }
         }
 
         /// <summary>
@@ -430,7 +452,7 @@ namespace VeriFactu.Config
         /// <summary>
         /// Datos del API REST para Verifactu de Irene Solutions.
         /// </summary>
-        [XmlElement("Api")] 
+        [XmlElement("Api")]
         public Api Api { get; set; }
 
         /// <summary>
@@ -491,9 +513,9 @@ namespace VeriFactu.Config
         {
 
             var dirs = new string[] { Path, _Current.InboxPath, _Current.OutboxPath,
-                _Current.BlockchainPath, _Current.InvoicePath, _Current.LogPath };
+_Current.BlockchainPath, _Current.InvoicePath, _Current.LogPath };
 
-            foreach (var dir in dirs) 
+            foreach (var dir in dirs)
                 if (dir != null && !Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
 

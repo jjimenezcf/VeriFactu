@@ -40,6 +40,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using VeriFactu.Common;
 using VeriFactu.Config;
 using VeriFactu.Xml;
@@ -81,6 +82,7 @@ namespace VeriFactu.Blockchain
         {
 
             LoadBlockchainsFromDisk();
+
             Initialized = true;
 
         }
@@ -95,10 +97,16 @@ namespace VeriFactu.Blockchain
         /// <param name="sellerID">Vendedor al que pertenece la cadena de bloques.</param>
         public Blockchain(string sellerID) : base(sellerID)
         {
-
             BlockchainPath = GetBlockchainPath(Key);
             SellerID = Key;
 
+        }
+
+        public static Blockchain Resetear(string sellerID)
+        {
+            var blockChain = (Blockchain)GetInstance(sellerID);
+            blockChain.BlockchainPath = blockChain.GetBlockchainPath(sellerID);
+            return blockChain;
         }
 
         #endregion
@@ -167,7 +175,7 @@ namespace VeriFactu.Blockchain
 
             // Establezco el momento de generación.
             CurrentTimeStamp = DateTime.Now;
-            registro.FechaHoraHusoGenRegistro = XmlParser.GetXmlDateTimeIso8601(CurrentTimeStamp);            
+            registro.FechaHoraHusoGenRegistro = XmlParser.GetXmlDateTimeIso8601(CurrentTimeStamp);
 
             // Calculo la huella con los datos del encadenamiento ya actualizados
             registro.Huella = registro.GetHashOutput();
@@ -187,8 +195,7 @@ namespace VeriFactu.Blockchain
         /// <summary>
         /// Elimina el útlimo elemento añadido a la cadena.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Se lanza si no se encuentra el último eslabón.</exception>
-        private void Remove() 
+        private void Remove()
         {
 
             if (Previous == null && CurrentID > 1)
@@ -231,12 +238,12 @@ namespace VeriFactu.Blockchain
                 File.Delete(BlockchainVarFileName);
 
             }
-            else 
+            else
             {
 
                 // Escribo el valor de la variables actuales
                 File.WriteAllText(BlockchainVarFileName, $"{CurrentID}{_CsvSeparator}" +    // 0
-                    $"{CurrentTimeStamp}{_CsvSeparator}" +                                  // 1
+                    $"{XmlParser.GetXmlDateTimeIso8601(CurrentTimeStamp)}{_CsvSeparator}" + // 1
                     $"{Current.Huella}{_CsvSeparator}" +                                    // 2
                     $"{Current.IDFactura.FechaExpedicion}{_CsvSeparator}" +                 // 3
                     $"{Current.IDFactura.IDEmisor}{_CsvSeparator}" +                        // 4
@@ -253,11 +260,11 @@ namespace VeriFactu.Blockchain
         /// con los datos necesarios.
         /// </summary>
         /// <returns>Linea de archivo csv</returns>
-        private string GetControFilelLine() 
+        private string GetControFilelLine()
         {
 
-            return $"{CurrentID}{_CsvSeparator}" +                              // 0 Id de entrada en la cadena de bloques
-                    $"{CurrentTimeStamp}{_CsvSeparator}" +                      // 1 Marca de tiempo
+            return $"{CurrentID}{_CsvSeparator}" +                                            // 0 Id de entrada en la cadena de bloques
+                    $"{XmlParser.GetXmlDateTimeIso8601(CurrentTimeStamp)}{_CsvSeparator}" +  // 1 Marca de tiempo
                     $"{Current.Huella}{_CsvSeparator}" +                        // 2 Huella
                     $"{Current.IDFactura.FechaExpedicion}{_CsvSeparator}" +     // 3 Fecha expedición factura
                     $"{Current.IDFactura.IDEmisor}{_CsvSeparator}" +            // 4 Id emisor
@@ -294,15 +301,14 @@ namespace VeriFactu.Blockchain
         /// </summary>
         /// <param name="blockchainDataFileName">Archivo de datos a restaurar.</param>
         /// <param name="blockchainDataPreviousFileName">Copia anterior utilizada para restaurar.</param>
-        /// <exception cref="InvalidOperationException">Se lanza si no se encuentra archivo previo a restaurar.</exception>
-        private void RestorePreviousData(string blockchainDataFileName, 
+        private void RestorePreviousData(string blockchainDataFileName,
             string blockchainDataPreviousFileName)
-        {            
+        {
 
             var isFirstLink = CurrentID == 0; // Se trataba del primer eslabón de la cadena
             var isFirstBlockPeriodLink = false; // Se trata del primer eslabón del periodo
 
-            if (!File.Exists(blockchainDataPreviousFileName)) 
+            if (!File.Exists(blockchainDataPreviousFileName))
             {
 
                 if (File.ReadAllLines(blockchainDataFileName).Length == 1)
@@ -428,8 +434,15 @@ namespace VeriFactu.Blockchain
         /// <summary>
         /// Carga todas las cadenas de bloques.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Se lanza si BlockchainPath no es un directorio válido.</exception>
         public static void LoadBlockchainsFromDisk()
+        {
+            ReloadBlockchainsFromDisk(recargar: false);
+        }
+
+        /// <summary>
+        /// Carga todas las cadenas de bloques.
+        /// </summary>
+        public static void ReloadBlockchainsFromDisk(bool recargar = true)
         {
 
             if (string.IsNullOrEmpty(Settings.Current.BlockchainPath) || !Directory.Exists(Settings.Current.BlockchainPath))
@@ -442,7 +455,9 @@ namespace VeriFactu.Blockchain
             {
 
                 var sellerID = Path.GetFileName(dir);
-                var blockchain = new Blockchain(sellerID);
+
+
+                var blockchain = recargar ? Resetear(sellerID) : new Blockchain(sellerID);
 
                 if (File.Exists(blockchain.BlockchainVarFileName))
                 {
@@ -458,7 +473,8 @@ namespace VeriFactu.Blockchain
                     var numSerieFactura = valuesVarData[5];
 
                     blockchain.CurrentID = Convert.ToUInt64(currentID);
-                    blockchain.CurrentTimeStamp = Convert.ToDateTime(currentTimeStamp);
+                    blockchain.CurrentTimeStamp = XmlParser.GetDateTimeIso8601(currentTimeStamp);
+                    Convert.ToDateTime(currentTimeStamp);
                     blockchain.Current = new Registro()
                     {
                         Huella = huella,
@@ -484,27 +500,25 @@ namespace VeriFactu.Blockchain
         /// Añade un elemento a la cadena de bloques.
         /// </summary>
         /// <param name="registro">Registro a añadir.</param>
-        /// <exception cref="Exception">Si no se puede añadir el eslabón en la cadena.</exception>
-        public void Add(Registro registro)
+        public void Add(Registro registro, StringBuilder traza)
         {
 
             Exception addException = null;
 
             lock (_Locker)
             {
-
-                try 
+                try
                 {
-
+                    traza.AppendLine($"El {nameof(CurrentID)}: {CurrentID}");
+                    traza.AppendLine($"la Huella: {nameof(Current.Huella)} = {Current?.Huella}");
+                    traza.AppendLine($"Primer registro: {(string.IsNullOrEmpty(Current?.Huella) ? "SI" : "NO")}");
                     Insert(registro);
                     Write();
 
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
-
                     addException = ex;
-
                 }
 
             }
@@ -518,7 +532,6 @@ namespace VeriFactu.Blockchain
         /// Añade una lista de elementos a la cadena de bloques.
         /// </summary>
         /// <param name="registros">Registros a añadir.</param>
-        /// <exception cref="Exception">Si no se puede añadir el eslabón en la cadena.</exception>
         public void Add(List<Registro> registros)
         {
 
@@ -532,7 +545,7 @@ namespace VeriFactu.Blockchain
 
                     var csvLines = new List<string>();
 
-                    for(int r = 0; r < registros.Count; r++)
+                    for (int r = 0; r < registros.Count; r++)
                         csvLines.Add(Insert(registros[r]));
 
                     Write(csvLines);
@@ -557,10 +570,7 @@ namespace VeriFactu.Blockchain
         /// </summary>
         /// <param name="registro">Registro a eliminar.
         /// Sólo puede eliminarse el último elemento añadido.</param> 
-        /// <exception cref="InvalidOperationException">
-        /// Si se itenta eliminar un registro que no es el último.
-        /// </exception>
-        public void Delete(Registro registro) 
+        public void Delete(Registro registro)
         {
 
             if (Settings.Current.DisableBlockchainDelete)
@@ -580,15 +590,15 @@ namespace VeriFactu.Blockchain
 
             lock (_Locker)
             {
-                
-                try 
+
+                try
                 {
 
                     WriteVar();
                     RestorePreviousData(blockchainDataFileName, blockchainDataPreviousFileName);
 
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
 
                     restoreException = ex;

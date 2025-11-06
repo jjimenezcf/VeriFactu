@@ -40,6 +40,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using System.Globalization;
 using VeriFactu.Common.Exceptions;
 using VeriFactu.Config;
 using VeriFactu.Xml;
@@ -97,9 +98,11 @@ namespace VeriFactu.Business.Operations
         /// de factura de una respuesta de consulta a la AEAT.</returns>
         private static Invoice GetInvoice(RegistroRespuestaConsultaFactuSistemaFacturacion registro, string sellerName = null)
         {
+            string[] formatos = { "dd-MM-yyyy" };
+            var culturaEspañola = new CultureInfo("es-ES");
+            DateTime fechaConvertida = DateTime.ParseExact(registro.IDFactura.FechaExpedicionFactura, formatos, culturaEspañola, DateTimeStyles.None);
 
-            var invoice = new Invoice(registro.IDFactura.NumSerieFactura,
-                XmlParser.ToDate(registro.IDFactura.FechaExpedicionFactura), $"{registro.IDFactura.IDEmisorFactura}");
+            var invoice = new Invoice(registro.IDFactura.NumSerieFactura, fechaConvertida, $"{registro.IDFactura.IDEmisorFactura}");
 
             var registroAlta = registro.DatosRegistroFacturacion;
 
@@ -258,8 +261,8 @@ namespace VeriFactu.Business.Operations
             var sellerName = queryAeatResponse.Cabecera?.ObligadoEmision?.NombreRazon;
 
             if (queryAeatResponse.RegistroRespuestaConsultaFactuSistemaFacturacion != null)
-                foreach (var registro in queryAeatResponse.RegistroRespuestaConsultaFactuSistemaFacturacion)
-                    invoices.Add(GetInvoice(registro, sellerName));
+            foreach (var registro in queryAeatResponse.RegistroRespuestaConsultaFactuSistemaFacturacion)
+                invoices.Add(GetInvoice(registro, sellerName));
 
             return invoices;
 
