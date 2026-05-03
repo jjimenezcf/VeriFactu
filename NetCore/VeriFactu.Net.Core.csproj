@@ -1,27 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net7.0;net8.0;netcoreapp3.1</TargetFrameworks>
-    <ApplicationIcon>VeriFactu.ico</ApplicationIcon>
-    <Version>1.0.61</Version>
-    <Title>VeriFactu</Title>
-    <Authors>Manuel Diago</Authors>
-    <Company>Irene Solutions SL</Company>
-    <Description>Generación, conservación y envío facturas VERI*FACTU</Description>
-    <Copyright>Irene Solutions SL 2025</Copyright>
-    <PackageProjectUrl>https://github.com/mdiago/VeriFactu</PackageProjectUrl>
-    <PackageIcon>VeriFactu.png</PackageIcon>
-    <RepositoryUrl>https://github.com/mdiago/VeriFactu</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>VeriFactu;Facturas;AEAT</PackageTags>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <AssemblyVersion>1.0.6.1</AssemblyVersion>
-    <FileVersion>1.0.6.1</FileVersion>
-    <AssemblyName>VeriFactu</AssemblyName>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ApplicationIcon>VeriFactu.ico</ApplicationIcon>
+		<Version>1.0.61</Version>
+		<Title>VeriFactu</Title>
+		<Authors>Manuel Diago</Authors>
+		<Company>Irene Solutions SL</Company>
+		<Description>Generación, conservación y envío facturas VERI*FACTU</Description>
+		<Copyright>Irene Solutions SL 2025</Copyright>
+		<PackageProjectUrl>https://github.com/mdiago/VeriFactu</PackageProjectUrl>
+		<PackageIcon>VeriFactu.png</PackageIcon>
+		<RepositoryUrl>https://github.com/mdiago/VeriFactu</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>VeriFactu;Facturas;AEAT</PackageTags>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<AssemblyVersion>1.0.6.1</AssemblyVersion>
+		<FileVersion>1.0.6.1</FileVersion>
+		<AssemblyName>VeriFactu</AssemblyName>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<Nullable>disable</Nullable>
+		<!-- Silenciar warnings de APIs obsoletas que pertenecen al código del fork -->
+		<NoWarn>$(NoWarn);CS0108;CS8981;SYSLIB0021;SYSLIB0014;SYSLIB0057;CS0618</NoWarn>
+	</PropertyGroup>
 
 
 	<!--<PropertyGroup>
@@ -64,37 +67,40 @@
 			</TfmSpecificPackageFile>
 		</ItemGroup>
 	</Target>-->
-    
 
 
-  <ItemGroup>
-    <Content Include="VeriFactu.ico" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="VeriFactu.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="VeriFactu.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<!-- Microsoft.Extensions.Logging.Debug es redundante en net10
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />  -->
+		<PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
+		<PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.7" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Src\Config\" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="VeriFactu.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Src\Config\" />
+	</ItemGroup>
 
 </Project>

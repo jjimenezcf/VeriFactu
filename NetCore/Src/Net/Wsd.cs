@@ -351,31 +351,32 @@ namespace VeriFactu.Net
         /// <summary>
         /// Devuelve el certificado establecido en la configuración
         /// mediante una ruta a un fichero de certificado.
+        /// ACTUALIZADO POR MI PARA V 10.0
         /// </summary>
         /// <returns>Devuelve el certificado de la 
         /// configuración para las comunicaciones.</returns>
         public static X509Certificate2 GetCertificateByFile()
         {
-
             if (!string.IsNullOrEmpty(Settings.Current.CertificatePath) &&
                 File.Exists(Settings.Current.CertificatePath))
+            {
                 if (string.IsNullOrEmpty(Settings.Current.CertificatePassword))
-                    return new X509Certificate2(Settings.Current.CertificatePath);
-                else
-                    return new X509Certificate2(Settings.Current.CertificatePath,
-                        Settings.Current.CertificatePassword,
-#if LE_461 || LE_472 || LE_480
-                        X509KeyStorageFlags.MachineKeySet |
-                        X509KeyStorageFlags.PersistKeySet |
-#endif
+                    return X509CertificateLoader.LoadPkcs12FromFile(
+                        Settings.Current.CertificatePath,
+                        password: null,
                         X509KeyStorageFlags.Exportable);
+                else
+                    return X509CertificateLoader.LoadPkcs12FromFile(
+                        Settings.Current.CertificatePath,
+                        Settings.Current.CertificatePassword,
+                        X509KeyStorageFlags.Exportable);
+            }
 
             return null;
-
         }
 
         #endregion
-    
+
     }
 
 }
