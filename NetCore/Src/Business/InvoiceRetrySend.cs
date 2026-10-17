@@ -40,6 +40,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using VeriFactu.Config;
 using VeriFactu.Xml;
 using VeriFactu.Xml.Factu;
 using VeriFactu.Xml.Factu.Alta;
@@ -66,6 +69,10 @@ namespace VeriFactu.Business
         /// <param name="invoice">Instancia de factura de entrada en el sistema.</param>
         public InvoiceRetrySend(Invoice invoice) : base(invoice)
         {
+
+            if (!string.IsNullOrEmpty(Settings.Current.IsNotVerifactu))
+                throw new InvalidOperationException(
+                    "No se pueden reenviar registros de facturación en modo NO VERI*FACTU.");
 
             IsRetrySend = true;
 
@@ -142,19 +149,26 @@ namespace VeriFactu.Business
             if (registro == null)
                 throw new Exception($"No se ha encontrado el RegistroAlta / RegistroAnulacion correspondiente a la entrada {this}.");
 
-            var refExt = (registro as RegistroAlta).RefExterna?? (registro as RegistroAnulacion).RefExterna;
+            var refExt = (registro as RegistroAlta)?.RefExterna ?? (registro as RegistroAnulacion)?.RefExterna;
 
             if (string.IsNullOrEmpty(refExt))
                 throw new Exception($"No se ha encontrado el RefExterna correspondiente a la entrada {this}.");
 
             registro.BlockchainLinkID = Convert.ToUInt64(refExt);
 
-            var fechaHoraHusoGenRegistro = (registro as RegistroAlta).OrderedFechaHoraHusoGenRegistro ?? (registro as RegistroAnulacion).OrderedFechaHoraHusoGenRegistro;
+            var fechaHoraHusoGenRegistro = (registro as RegistroAlta)?.OrderedFechaHoraHusoGenRegistro ?? (registro as RegistroAnulacion)?.OrderedFechaHoraHusoGenRegistro;
 
             if (string.IsNullOrEmpty(fechaHoraHusoGenRegistro))
                 throw new Exception($"No se ha encontrado el OrderedFechaHoraHusoGenRegistro correspondiente a la entrada {this}.");
 
             registro.FechaHoraHusoGenRegistro = fechaHoraHusoGenRegistro;
+
+            var huella = (registro as RegistroAlta)?.OrderedHuella ?? (registro as RegistroAnulacion)?.OrderedHuella;
+
+            if (string.IsNullOrEmpty(huella))
+                throw new Exception($"No se ha encontrado el OrderedHuella correspondiente a la entrada {this}.");
+
+            registro.Huella = huella;
 
             // Establecemos el valor de Registro
             Registro = registro;
@@ -192,7 +206,9 @@ namespace VeriFactu.Business
         /// <para> 2. Guarda el registro en disco en el el directorio de registros emitidos.</para>
         /// <para> 3. Establece Posted = true.</para>
         /// </summary>
-        internal override void SaveBlockchainChanges()
+        /// <param name="certificate">Certificado para la firma.</param>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal override void SaveBlockchainChanges(X509Certificate2 certificate)
         {
 
             if (Registro.BlockchainLinkID == 0)
@@ -230,6 +246,20 @@ namespace VeriFactu.Business
 
         }
 
+        /// <summary>
+        /// Contabiliza el reenvío evitando incorporar nuevamente a la cadena
+        /// un registro que ya se encuentre incluido en ella.
+        /// </summary>
+        /// <param name="certificate">Certificado para la firma.</param>
+        /// <param name="traza">Traza del proceso de contabilización.</param>
+        internal override void Post(X509Certificate2 certificate, StringBuilder traza)
+        {
+
+            BlockchainManager.AddIfNotExists(Registro);
+            SaveBlockchainChanges(certificate);
+
+        }
+
         #endregion
 
         #region Propiedades Públicas de Instancia
@@ -237,24 +267,24 @@ namespace VeriFactu.Business
         /// <summary>
         /// Path de la factura original en el directorio de facturas.
         /// </summary>
-        public string OriginalInvoiceFilePath => $"{InvoicePostedPath}{EncodedInvoiceID}.xml";
+        public string OriginalInvoiceFilePath => Path.Combine(InvoicePostedPath, $"{EncodedInvoiceID}.xml");
 
         /// <summary>
         /// Path de la factura en el directorio de facturas.
         /// </summary>
-        public override string InvoiceFilePath => $"{InvoicePostedPath}{EncodedInvoiceID}.RTS.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml";
+        public override string InvoiceFilePath => Path.Combine(InvoicePostedPath, $"{EncodedInvoiceID}.RTS.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml");
 
         /// <summary>
         /// Path de la factura en el directorio de archivado de los datos de la
         /// cadena.
         /// </summary>
-        public override string InvoiceEntryFilePath => $"{InvoiceEntryPath}{InvoiceEntryID}.RTS.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml";
+        public override string InvoiceEntryFilePath => Path.Combine(InvoiceEntryPath, $"{InvoiceEntryID}.RTS.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml");
 
         /// <summary>
         /// Path del directorio de archivado de los datos de la
         /// cadena.
         /// </summary>
-        public override string ResponseFilePath => $"{ResponsesPath}{InvoiceEntryID}.RTS.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml";
+        public override string ResponseFilePath => Path.Combine(ResponsesPath, $"{InvoiceEntryID}.RTS.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml");
 
         #endregion
 

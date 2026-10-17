@@ -67,6 +67,12 @@ namespace VeriFactu.Net.Rest.Json.Parser.Lexer.Tokens
         internal virtual int Length => 1;
 
         /// <summary>
+        /// Indica si el token se debe excluir de la
+        /// serialización.
+        /// </summary>
+        internal virtual bool Excluded => false;
+
+        /// <summary>
         /// Valor de la cadena de texto.
         /// </summary>
         internal virtual string Value

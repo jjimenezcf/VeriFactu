@@ -74,6 +74,8 @@ namespace VeriFactu.Business.Validation.Validators.Alta
         protected override List<string> GetBlockErrors()
         {
 
+            // 3.1.3 Validaciones de negocio de la agrupación RegistroAlta en el bloque de RegistroFactura.
+
             var result = new List<string>();
 
             // 14. Cupon
@@ -83,7 +85,7 @@ namespace VeriFactu.Business.Validation.Validators.Alta
 
             // Sólo se podrá rellenar con “S” (no es obligatorio) si TipoFactura = ”R5” o “R1”
             if(_RegistroAlta.Cupon == "S" && !isFacturaCupon)
-                result.Add($"Error en el bloque RegistroAlta ({_RegistroAlta}):" +
+                result.Add($"[3.1.3-14.0] Error en el bloque RegistroAlta ({_RegistroAlta}):" +
                     $" Cupon sólo se podrá rellenar con “S” (no es obligatorio) si TipoFactura = ”R5” o “R1”.");
 
             return result;

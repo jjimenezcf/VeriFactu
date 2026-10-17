@@ -37,6 +37,7 @@
     address: info@irenesolutions.com
  */
 
+using System;
 using System.Xml.Serialization;
 
 namespace VeriFactu.Xml.Factu.Alta
@@ -126,6 +127,13 @@ namespace VeriFactu.Xml.Factu.Alta
         ArrendamientoLocalNecocio = 11,
 
         /// <summary>
+        /// Solo para compatibilidad con SII. No usar en VERI*FACTU.
+        /// </summary>
+        [Obsolete("Solo para compatibilidad con SII. No usar en VERI*FACTU.", false)]
+        [XmlEnum("12")]
+        ArrendamientoLocalNecocioNoRetencion = 12,
+
+        /// <summary>
         /// <para> L8A: Factura con IVA pendiente de devengo en certificaciones de obra cuyo destinatario sea una Administración Pública.</para>
         /// <para> L8B: Factura con IGIC pendiente de devengo en certificaciones de obra cuyo destinatario sea una Administración Pública.</para>
         /// <para> ('14')</para>
@@ -170,7 +178,13 @@ namespace VeriFactu.Xml.Factu.Alta
         /// L8B: Operaciones sujetas al IPSI
         /// </summary>
         [XmlEnum("20")]
-        RegimenSimplificado = 20
+        RegimenSimplificado = 20,
+
+        /// <summary>
+        /// L8B: Régimen simplificado IPSI
+        /// </summary>
+        [XmlEnum("21")]
+        RegimenSimplificadoIpsi = 21
 
     }
 

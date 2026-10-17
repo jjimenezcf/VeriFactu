@@ -42,6 +42,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using VeriFactu.Business.Validation.NIF;
 using VeriFactu.Xml;
 using VeriFactu.Xml.Factu.Alta;
@@ -158,7 +159,7 @@ namespace Verifactu
         /// </summary>
         /// <param name="operationDate">Fecha operación.</param>
         [DispId(1)]
-        void SeOperationDate(DateTime operationDate);
+        void SetOperationDate(DateTime operationDate);
 
         /// <summary>
         /// Obtiene el registro de alta para verifactu.
@@ -174,6 +175,18 @@ namespace Verifactu
         /// <param name="taxItem">Datos factura sustituida.</param>
         [DispId(3)]
         void SetSubstitution(IVfTaxItem taxItem);
+
+        /// <summary>
+        /// Establece el identificador que especifica si la factura ha sido
+        /// emitida por un tercero o por el destinatario. L6.
+        /// </summary>
+        /// <param name="thirdPartyType">
+        /// <para> Tipo de tercero emisor:</para>
+        /// <para> 'D': Destinatario.</para>
+        /// <para> 'T': Tercero.</para>
+        /// </param>
+        [DispId(4)]
+        void SetThirdPartyIssuer(string thirdPartyType);
 
         /// <summary>
         /// Obtiene el registro de alta para verifactu.
@@ -274,6 +287,12 @@ namespace Verifactu
         /// Fecha operación.
         /// </summary>        
         DateTime? _OperationDate;
+
+        /// <summary>
+        /// Identificador que especifica si la factura ha sido
+        /// emitida por un tercero o por el destinatario. L6.
+        /// </summary>
+        string _ThirdPartyIssuer;
 
         /// <summary>
         /// Objeto factura generado con los datos.
@@ -520,10 +539,34 @@ namespace Verifactu
         /// de que se necesaria.
         /// </summary>
         /// <param name="operationDate">Fecha operación.</param>
-        public void SeOperationDate(DateTime operationDate)
+        public void SetOperationDate(DateTime operationDate)
         {
 
             _OperationDate = operationDate;
+
+        }
+
+        /// <summary>
+        /// Establece el identificador que especifica si la factura ha sido
+        /// emitida por un tercero o por el destinatario. L6.
+        /// </summary>
+        /// <param name="thirdPartyType">
+        /// <para> Tipo de tercero emisor:</para>
+        /// <para> 'D': Destinatario.</para>
+        /// <para> 'T': Tercero.</para>
+        /// </param>
+        public void SetThirdPartyIssuer(string thirdPartyType)
+        {
+
+            if (!Regex.IsMatch(thirdPartyType, @"^[DT]{1}$"))
+                throw new ArgumentException($"El parámetro thirdPartyType sólo admite los valores" +
+                    $" 'D' para destinatario o 'T' para resto de terceros.");
+
+            if (thirdPartyType == "T")
+                throw new NotImplementedException($"Únicamente está soportada la modalidad de autofactura 'D'." +
+                    $" Pendiente de implementar la opción 'T'.");
+
+            _ThirdPartyIssuer = thirdPartyType;
 
         }
 
@@ -738,6 +781,16 @@ namespace Verifactu
                 };
 
                 registroAlta.TipoRectificativa = TipoRectificativa.S;
+
+            }
+
+            if (_ThirdPartyIssuer != null)
+            {
+
+                var registroAlta = entry.Registro as RegistroAlta;
+
+                registroAlta.EmitidaPorTerceroODestinatario = _ThirdPartyIssuer == "D" ? EmitidaPorTerceroODestinatario.D : EmitidaPorTerceroODestinatario.T;
+                registroAlta.EmitidaPorTerceroODestinatarioSpecified = true;
 
             }
 

@@ -41,7 +41,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using System.Xml;
+using VeriFactu.Common.Exceptions;
 using VeriFactu.Config;
 using VeriFactu.Net;
 using VeriFactu.Xml;
@@ -166,7 +168,7 @@ namespace VeriFactu.Business.Operations
         internal string GetOutBoxPath(string sellerID)
         {
 
-            return GetDirPath($"{Settings.Current.OutboxPath}{sellerID}");
+            return GetDirPath(Path.Combine(Settings.Current.OutboxPath, sellerID));
 
         }
 
@@ -182,7 +184,7 @@ namespace VeriFactu.Business.Operations
         internal string GetInBoxPath(string sellerID)
         {
 
-            return GetDirPath($"{Settings.Current.InboxPath}{sellerID}");
+            return GetDirPath(Path.Combine(Settings.Current.InboxPath, sellerID));
 
         }
 
@@ -198,7 +200,7 @@ namespace VeriFactu.Business.Operations
         internal string GetInvoiceEntryPath(string year)
         {
 
-            return GetDirPath($"{OutboxPath}{year}");
+            return GetDirPath(Path.Combine(OutboxPath, year));
 
         }
 
@@ -214,7 +216,7 @@ namespace VeriFactu.Business.Operations
         internal string GetResponsesPath(string year)
         {
 
-            return GetDirPath($"{InboxPath}{year}");
+            return GetDirPath(Path.Combine(InboxPath, year));
 
         }
 
@@ -261,7 +263,7 @@ namespace VeriFactu.Business.Operations
         internal string GetErrorResponseFilePath()
         {
 
-            return $"{ResponsesPath}{InvoiceEntryID}.ERR.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml";
+            return Path.Combine(ResponsesPath, $"{InvoiceEntryID}.ERR.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml");
 
         }
 
@@ -274,7 +276,7 @@ namespace VeriFactu.Business.Operations
         protected string GetErrorInvoiceEntryFilePath()
         {
 
-            return $"{InvoiceEntryPath}{InvoiceEntryID}.ERR.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml";
+            return Path.Combine(InvoiceEntryPath, $"{InvoiceEntryID}.ERR.{DateTime.Now:yyyy.MM.dd.HH.mm.ss.ffff}.xml");
 
         }
 
@@ -316,6 +318,20 @@ namespace VeriFactu.Business.Operations
                 throw new InvalidOperationException("No se puede enviar un registro no contabilizado (Posted = false).");
 
             Response = Send(certificate);
+
+            // https://github.com/mdiago/VeriFactu/issues/219
+            if (Regex.IsMatch(Response, @"^<!DOCTYPE html>"))
+            {
+
+                // https://github.com/mdiago/VeriFactu/discussions/236
+
+                File.WriteAllText(Path.Combine(Settings.Current.LogPath, $"ERR.{DateTime.Now:yyyyMMddHHmmss}.html"), Response);
+
+                throw new InvalidDataException($"La respuesta recibidad de la AEAT no es un XML. Es un documento html.\n" +
+                    $"Esto suele ocurrir cuando se utiliza un certificado no válido.", new UnexpectedHtmlException(Response));                
+
+            }
+
             IsSent = true;
 
         }
@@ -428,13 +444,13 @@ namespace VeriFactu.Business.Operations
         /// Path de la factura en el directorio de archivado de los datos de la
         /// cadena.
         /// </summary>
-        public virtual string InvoiceEntryFilePath => $"{InvoiceEntryPath}{InvoiceEntryID}.xml";
+        public virtual string InvoiceEntryFilePath => Path.Combine(InvoiceEntryPath, $"{InvoiceEntryID}.xml");
 
         /// <summary>
         /// Path del directorio de archivado de los datos de la
         /// cadena.
         /// </summary>
-        public virtual string ResponseFilePath => $"{ResponsesPath}{InvoiceEntryID}.xml";
+        public virtual string ResponseFilePath => Path.Combine(ResponsesPath, $"{InvoiceEntryID}.xml");
 
         /// <summary>
         /// Sobre SOAP.
@@ -551,10 +567,12 @@ namespace VeriFactu.Business.Operations
         /// Envía un xml en formato binario a la AEAT.
         /// </summary>
         /// <param name="xml">Archivo xml en formato binario a la AEAT.</param>
-        /// <param name="op"> Acción para el webservice.</param>
+        /// <param name="op">Acción para el webservice.</param>
         /// <param name="certificate">Certificado para la petición.</param>
+        /// <param name="isRequirement">Indica si el envío se realiza por requerimiento.</param>
         /// <returns>Devuelve las respuesta de la AEAT.</returns>
-        public static string SendXmlBytes(byte[] xml, string op = null, X509Certificate2 certificate = null)
+        public static string SendXmlBytes(byte[] xml, string op = null, 
+            X509Certificate2 certificate = null, bool isRequirement = false)
         {
 
             if (op == null)
@@ -565,7 +583,14 @@ namespace VeriFactu.Business.Operations
             using (var msXml = new MemoryStream(xml))
                 xmlDocument.Load(msXml);
 
-            var url = Settings.Current.VeriFactuEndPointPrefix;
+            if(isRequirement && string.IsNullOrEmpty(Settings.Current.IsNotVerifactu))
+                throw new InvalidOperationException("No se puede enviar un registro por requerimiento" +
+                    " en un sistema configurado como VERI*FACTU.");
+
+            var url = isRequirement ?
+                 Settings.Current.VeriFactuEndPointReqPrefix :
+                 Settings.Current.VeriFactuEndPointPrefix;
+            
             var action = $"{url}{op}";
 
             return Wsd.Call(url, action, xmlDocument, certificate);

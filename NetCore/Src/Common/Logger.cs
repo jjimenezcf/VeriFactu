@@ -60,7 +60,7 @@ namespace VeriFactu.Common
         Dictionary<int, string> _Log;
 
         /// <summary>
-        /// Almacena los mensajes.
+        /// Almacena marca de tiempo de los mensajes.
         /// </summary>
         Dictionary<int, DateTime> _LogTime;
 
@@ -161,7 +161,7 @@ namespace VeriFactu.Common
             if (string.IsNullOrEmpty(text))
                 return;
 
-            path = string.IsNullOrEmpty(path) ? $"{Settings.Current.LogPath}{DateTime.Now:yyyyMMddHHmmss}.txt" : path;
+            path = string.IsNullOrEmpty(path) ? Path.Combine(Settings.Current.LogPath, $"{DateTime.Now:yyyyMMddHHmmss}.txt") : path;
             File.WriteAllText(path, $"{this}");
 
         }

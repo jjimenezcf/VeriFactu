@@ -111,7 +111,7 @@ namespace VeriFactu.Xml.Factu
         {
 
             var binInput = GetHashInput();
-            var hash = Utils.HashAlgorithm.ComputeHash(binInput);
+            var hash = Utils.ComputeHash(binInput);
 
             return hash;
 
@@ -211,7 +211,7 @@ namespace VeriFactu.Xml.Factu
         /// Referencia externa.
         /// </summary>
         [XmlIgnore]
-        public string ExternKey => BlockchainLinkID == 0 ?
+        public virtual string ExternKey => BlockchainLinkID == 0 ?
             null : $"{BlockchainLinkID}".PadLeft(20, '0');
 
 

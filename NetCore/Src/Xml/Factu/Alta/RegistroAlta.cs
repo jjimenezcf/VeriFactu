@@ -39,6 +39,7 @@
 
 using System.Collections.Generic;
 using System.Web;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace VeriFactu.Xml.Factu.Alta
@@ -424,7 +425,7 @@ namespace VeriFactu.Xml.Factu.Alta
         /// En estos casos, deberá indicarse tal circunstancia en el registro. </para>
         /// <para>Alfanumérico(15)</para>
         /// </summary>
-        [XmlElement("NumRegistroAcuerdoFacturacion", Namespace = Namespaces.NamespaceSFLR, Order = 27)]
+        [XmlElement("NumRegistroAcuerdoFacturacion", Namespace = Namespaces.NamespaceSF, Order = 27)]
         public string NumRegistroAcuerdoFacturacion { get; set; }
 
         /// <summary>
@@ -443,7 +444,7 @@ namespace VeriFactu.Xml.Factu.Alta
         /// cumplimiento del reglamento</para>
         /// <para>Alfanumérico (16)</para>
         /// </summary>
-        [XmlElement("IdAcuerdoSistemaInformatico", Namespace = Namespaces.NamespaceSFLR, Order = 28)]
+        [XmlElement("IdAcuerdoSistemaInformatico", Namespace = Namespaces.NamespaceSF, Order = 28)]
         public string IdAcuerdoSistemaInformatico { get; set; }
 
         /// <summary>
@@ -498,6 +499,12 @@ namespace VeriFactu.Xml.Factu.Alta
         /// </summary>
         [XmlElement("Huella", Namespace = Namespaces.NamespaceSF, Order = 30)]
         public string OrderedHuella { get; set; }
+
+        /// <summary>
+        /// Firma electrónica del registro.
+        /// </summary>
+        [XmlAnyElement(Name = "Signature", Namespace = Namespaces.NamespaceDs, Order = 31)]
+        public XmlElement Signature { get; set; }
 
         #endregion
 

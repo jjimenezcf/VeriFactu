@@ -75,17 +75,22 @@ namespace VeriFactu.Business.Validation.Validators.Alta
         protected override List<string> GetBlockErrors()
         {
 
+            // 3.1.3 Validaciones de negocio de la agrupación RegistroAlta en el bloque de RegistroFactura.
+            //      15. Agrupación Desglose / DetalleDesglose. 
+
             var result = new List<string>();
 
             if (_RegistroAlta.TipoFactura != TipoFactura.F2)
                 return result;
+
+            // 15.8 Validaciones adicionales en el caso de facturas simplificadas. 
 
             // Cuando TipoFactura sea “F2”, se validará que Ʃ (BaseImponibleOimporteNoSujeto + CuotaRepercutida)
             // de todas las líneas de detalle no sea superior a 3.000,00 euros. Se admitirá un error de + 10,00 euros.
 
             // Esta validación no se aplicará cuando exista acuerdo de facturación, es decir, cuando el
             // campo NumRegistroAcuerdoFacturacion esté cumplimentado. Esta validación tampoco se
-            //aplicará cuando el campo FacturaSinIdentifDestinatarioArticulo61d = “S”
+            // aplicará cuando el campo FacturaSinIdentifDestinatarioArticulo61d = “S”
 
             if (string.IsNullOrEmpty(_RegistroAlta.NumRegistroAcuerdoFacturacion) && 
                 _RegistroAlta.FacturaSinIdentifDestinatarioArt61d != "S") 
@@ -104,7 +109,7 @@ namespace VeriFactu.Business.Validation.Validators.Alta
                 }
 
                 if(Math.Abs(total) > 3010)
-                    result.Add($"Error en el bloque RegistroAlta ({_RegistroAlta}):" +
+                    result.Add($"[3.1.3-15.8.0] Error en el bloque RegistroAlta ({_RegistroAlta}):" +
                         $" Cuando TipoFactura sea “F2”, se validará que Ʃ (BaseImponibleOimporteNoSujeto + CuotaRepercutida)" +
                         $" de todas las líneas de detalle no sea superior a 3.000,00 euros. Se admitirá un error de + 10,00 euros.");
 

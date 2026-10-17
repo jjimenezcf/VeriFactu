@@ -126,7 +126,7 @@ namespace VeriFactu.Net.Rest.Json.Parser
 
             }
 
-            while (_CurrentIndex < _Tokens.Count)
+            while (_CurrentIndex < _Tokens.Count - 1)
             {
                 
                 var keyToken = _Tokens[++_CurrentIndex];
@@ -225,7 +225,7 @@ namespace VeriFactu.Net.Rest.Json.Parser
 
         /// <summary>
         /// Devuelve el resultado de la deserialización
-        /// de la cadena JSON.
+        /// de la cadena JSON en un objeto dinámico.
         /// </summary>
         /// <returns>resultado de la deserialización
         /// de la cadena JSON.</returns>

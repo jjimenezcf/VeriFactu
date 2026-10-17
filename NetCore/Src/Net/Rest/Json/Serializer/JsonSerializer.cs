@@ -40,7 +40,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Xml.Serialization;
+using VeriFactu.Common;
 
 namespace VeriFactu.Net.Rest.Json.Serializer
 {
@@ -59,10 +59,14 @@ namespace VeriFactu.Net.Rest.Json.Serializer
         static readonly Dictionary<Type, IJsonSerializer> _SerializersByType = new Dictionary<Type, IJsonSerializer>()
         {
             {typeof(int),       new JsonIntSerializer() },
+            {typeof(int?),      new JsonIntSerializer() },
             {typeof(long),      new JsonIntSerializer() },
+            {typeof(long?),     new JsonIntSerializer() },
             {typeof(byte),      new JsonIntSerializer() },
             {typeof(decimal),   new JsonDecimalSerializer() },
+            {typeof(decimal?),  new JsonDecimalSerializer() },
             {typeof(double),    new JsonDecimalSerializer() },
+            {typeof(double?),   new JsonDecimalSerializer() },
             {typeof(string),    new JsonStringSerializer() },
             {typeof(DateTime),  new JsonDateTimeSerializer() },
             {typeof(DateTime?), new JsonDateTimeSerializer() },
@@ -155,21 +159,9 @@ namespace VeriFactu.Net.Rest.Json.Serializer
             if (pInf.PropertyType.IsEnum)
             {
 
-                var enumItemField = _Value.GetType().GetField($"{value}");
+                var enumValue = Utils.GetXmlEnumValue((Enum)_Value);
 
-                if (enumItemField != null) 
-                {
-
-                    var xmlEnumAtt = enumItemField.GetCustomAttribute(typeof(XmlEnumAttribute)) as XmlEnumAttribute;
-
-                    string enumValue = null;
-
-                    if (xmlEnumAtt != null)
-                        enumValue = xmlEnumAtt.Name;
-
-                    _Serializer = new JsonEnumSerializer(enumValue);
-
-                }                
+                _Serializer = new JsonEnumSerializer(enumValue);
 
             }
             else 

@@ -295,7 +295,8 @@ namespace VeriFactu.Business
 
                 }
 
-                detalleDesglose.ClaveRegimenSpecified = (detalleDesglose.Impuesto == Impuesto.IVA || detalleDesglose.Impuesto == Impuesto.IGIC);
+                detalleDesglose.ClaveRegimenSpecified = (detalleDesglose.Impuesto == Impuesto.IVA || 
+                    detalleDesglose.Impuesto == Impuesto.IPSI || detalleDesglose.Impuesto == Impuesto.IGIC);
 
                 desglose.Add(detalleDesglose);
 
@@ -354,9 +355,24 @@ namespace VeriFactu.Business
                     }
                 };
 
-            if(string.IsNullOrEmpty(BuyerCountryID))
+            // Si el campo IDType = “02” (NIF-IVA), no será exigible el campo CodigoPais.
+            if (BuyerIDType == IDType.NIF_IVA && string.IsNullOrEmpty(BuyerCountryID))
+                return new List<Interlocutor>()
+                {
+                    new Interlocutor
+                    {
+                        NombreRazon = BuyerName,
+                        IDOtro = new IDOtro()
+                        {
+                            ID = BuyerID,
+                            IDType = BuyerIDType
+                        }
+                    }
+                };
+
+            if (string.IsNullOrEmpty(BuyerCountryID))
                 throw new Exception($"Error en factura ({this}): Si BuyerID no es un identificador español válido" +
-                    " (NIF, DNI, NIE...) es obligatorio que BuyerCountryID tenga un valor.");
+                    " (NIF, DNI, NIE...) o IDType = “02” (NIF-IVA) es obligatorio que BuyerCountryID tenga un valor.");
 
             bool countryIdValid = Enum.TryParse(BuyerCountryID, out CodigoPais buyerCountryId);
 
@@ -847,6 +863,30 @@ namespace VeriFactu.Business
         }
 
         /// <summary>
+        /// Parámetros en forma key1=value1&amp;key2=value2
+        /// para incluir información adicional en referencia a la
+        /// factura.
+        /// </summary>
+        public string Parameters
+        {
+
+            get
+            {
+
+                return _InvoiceData.Parameters;
+
+            }
+            set
+            {
+
+                _InvoiceData.Parameters = value;
+
+            }
+
+        }
+
+
+        /// <summary>
         /// RegistroAlta a partir del cual se ha creado la factura, en el
         /// caso de que la instancia se haya creado a partir de un registro
         /// de alta.
@@ -893,9 +933,10 @@ namespace VeriFactu.Business
 
             CalculateTotals();
 
-            // Máximo dos decimales
-            var totalTaxAmount = Math.Round(TotalTaxOutput + TotalTaxOutputSurcharge, 2);
-            var totalAmount = Math.Round(TotalAmount, 2);
+            // Máximo dos decimales. Mismo criterio que el desglose: el 5 aleja de cero.
+            // ToEven guardaba 1.005 como 1.00 mientras la línea salía 1.01.
+            var totalTaxAmount = Math.Round(TotalTaxOutput + TotalTaxOutputSurcharge, 2, MidpointRounding.AwayFromZero);
+            var totalAmount = Math.Round(TotalAmount, 2, MidpointRounding.AwayFromZero);
 
             var registroAlta = new RegistroAlta()
             {

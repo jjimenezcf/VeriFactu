@@ -46,7 +46,6 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
-using System.Xml.Linq;
 using VeriFactu.Config;
 
 namespace VeriFactu.Net
@@ -237,10 +236,13 @@ namespace VeriFactu.Net
 
             socketsHttpHandler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions
             {
-                ClientCertificates = new X509CertificateCollection { cert }
+                ClientCertificates = new X509CertificateCollection { cert },
+                // Desactiva la comprobación de revocación SOLO para este handler.
+                // El AppContext.SetSwitch anterior la desactivaba para TODOS los
+                // SocketsHttpHandler del proceso anfitrión, no solo para la AEAT.
+                CertificateRevocationCheckMode = X509RevocationMode.NoCheck
             };
 
-            AppContext.SetSwitch("System.Net.Http.CheckCertificateRevocationList", false);
             AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", false);
             ServicePointManager.Expect100Continue = false;
 
